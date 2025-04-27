@@ -19,7 +19,7 @@ model Token {
   address      String   @unique
   name         String
   symbol       String
-  decimals     Int
+  decimals     BigInt
   totalSupply  String
   logoUrl      String?
   createdAt    DateTime @default(now())

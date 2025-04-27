@@ -5,7 +5,12 @@ import { getAllTokens } from '@/utils/db';
 export async function GET() {
   try {
     const tokens = await getAllTokens();
-    return NextResponse.json({ tokens });
+    // Convert BigInt decimals to string for JSON serialization
+    const serializableTokens = tokens.map(token => ({
+      ...token,
+      decimals: token.decimals.toString(),
+    }));
+    return NextResponse.json({ tokens: serializableTokens });
   } catch (error) {
     console.error('Error fetching tokens:', error);
     return NextResponse.json(

@@ -33,7 +33,11 @@ export async function POST() {
 
     return NextResponse.json({ 
       message: 'Token data refreshed',
-      tokens: results 
+      // Convert BigInt decimals to string for JSON serialization
+      tokens: results.map(token => ({
+        ...token,
+        decimals: token.decimals.toString(),
+      })) 
     });
   } catch (error) {
     console.error('Error refreshing token data:', error);
