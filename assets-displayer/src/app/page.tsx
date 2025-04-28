@@ -35,7 +35,7 @@ const shortenAddress = (address: string): string => {
 export default function Home() {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false); // Keep track of refresh state
   const [error, setError] = useState<string | null>(null);
 
   // Fetch tokens from the API
@@ -62,7 +62,8 @@ export default function Home() {
   // Refresh token data from the blockchain
   const refreshTokenData = async () => {
     try {
-      setRefreshing(true);
+      setRefreshing(true); // Set refreshing state to true
+      setError(null); // Clear previous errors
       const response = await fetch('/api/tokens/refresh', {
         method: 'POST',
       });
@@ -73,13 +74,14 @@ export default function Home() {
         throw new Error(data.error || 'Failed to refresh tokens');
       }
       
-      // Fetch updated token data
+      // Fetch updated token data after successful refresh
       await fetchTokens();
     } catch (error) {
       console.error('Error refreshing tokens:', error);
-      setError('Failed to refresh token data. Please try again later.');
+      // Display specific error from API if available, otherwise generic message
+      setError(error instanceof Error ? error.message : 'Failed to refresh token data. Please try again later.');
     } finally {
-      setRefreshing(false);
+      setRefreshing(false); // Set refreshing state back to false
     }
   };
 
@@ -93,28 +95,47 @@ export default function Home() {
       <h1 className="text-3xl font-bold mb-6">Token Assets</h1>
 
       {/* Add link to Prices Page */}
-      <div className="mb-6">
+      <div className="mb-6 flex space-x-4">
         <Link href="/prices" className="text-blue-500 hover:underline">
           View Mock Token Prices
         </Link>
+        {/* Add Refresh Button */}
+        <button
+          onClick={refreshTokenData}
+          disabled={refreshing} // Disable button while refreshing
+          className={`px-4 py-2 rounded ${
+            refreshing 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-blue-500 hover:bg-blue-700 text-white'
+          }`}
+        >
+          {refreshing ? 'Refreshing...' : 'Refresh Token Data'}
+        </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 w-full max-w-4xl">
           {error}
         </div>
       )}
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      {/* Keep loading indicator */}
+      {loading && !refreshing && ( // Only show initial loading spinner if not refreshing
+         <div className="flex items-center justify-center h-64">
+           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+         </div>
+       )}
+
+      {/* Adjust message when no tokens and not loading */}
+      {!loading && tokens.length === 0 && !error && ( // Show only if not loading, no tokens, and no error
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4 w-full max-w-4xl">
+          <p>No token data available. Click "Refresh Token Data" above to fetch information from the blockchain.</p>
         </div>
-      ) : tokens.length === 0 ? (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-          <p>No token data available. Click "Refresh Token Data" to fetch information from the blockchain.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+      )}
+
+      {/* Display table only if not initial loading and tokens exist */}
+      {!loading && tokens.length > 0 && (
+        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow w-full max-w-4xl">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -138,7 +159,18 @@ export default function Home() {
                             alt={`${token.name} logo`}
                             width={40}
                             height={40}
+                            onError={(e) => { // Add basic error handling for images
+                              e.currentTarget.style.display = 'none'; // Hide broken image icon
+                              // Optionally show a placeholder div
+                              const placeholder = e.currentTarget.parentElement?.querySelector('.placeholder-icon');
+                              // Cast placeholder to HTMLElement to access style property
+                              if (placeholder && placeholder instanceof HTMLElement) {
+                                placeholder.style.display = 'block';
+                              }
+                            }}
                           />
+                           {/* Placeholder for when image fails */}
+                           <div className="placeholder-icon flex-shrink-0 h-10 w-10 bg-gray-200 dark:bg-gray-600 rounded-full mr-4" style={{ display: 'none' }}></div>
                         </div>
                       ) : (
                         <div className="flex-shrink-0 h-10 w-10 bg-gray-200 dark:bg-gray-600 rounded-full mr-4"></div>
@@ -164,10 +196,12 @@ export default function Home() {
                     </a>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {formatNumber(token.totalSupply, token.decimals)} {token.symbol}
+                    {/* Ensure decimals is treated as a number */}
+                    {formatNumber(token.totalSupply, Number(token.decimals))} {token.symbol} 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    {token.decimals}
+                    {/* Ensure decimals is treated as a number */}
+                    {Number(token.decimals)}
                   </td>
                 </tr>
               ))}
