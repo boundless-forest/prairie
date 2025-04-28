@@ -1,10 +1,44 @@
 import { NextResponse } from 'next/server';
-import { getTokenInfo, WELL_KNOWN_TOKENS } from '@/utils/erc20';
+import { getTokenInfo } from '@/utils/erc20';
 import { saveToken } from '@/utils/db';
-import type { Token } from '@/generated/prisma'; // Changed import path
+import type { Token } from '@/generated/prisma';
+import fs from 'fs';
+import path from 'path';
+import yaml from 'js-yaml';
+
+interface TokenConfig {
+  address: string;
+  logoUrl: string;
+}
+
+// Function to load tokens from YAML config
+const loadTokensFromConfig = (): TokenConfig[] => {
+  const configPath = path.resolve(process.cwd(), 'config/tokens.yaml');
+  try {
+    const fileContents = fs.readFileSync(configPath, 'utf8');
+    const data = yaml.load(fileContents);
+    // Basic validation
+    if (!Array.isArray(data) || !data.every(item => item && typeof item.address === 'string' && typeof item.logoUrl === 'string')) {
+      console.error('Invalid token configuration format in tokens.yaml');
+      return [];
+    }
+    return data as TokenConfig[];
+  } catch (error) {
+    console.error('Error loading token configuration:', error);
+    return [];
+  }
+};
 
 // POST /api/tokens/refresh - Refresh all token data from the blockchain
 export async function POST() {
+  const WELL_KNOWN_TOKENS = loadTokensFromConfig();
+  if (WELL_KNOWN_TOKENS.length === 0) {
+    return NextResponse.json(
+      { error: 'Failed to load token configuration or configuration is empty' },
+      { status: 500 }
+    );
+  }
+
   try {
     const results: Token[] = [];
 
