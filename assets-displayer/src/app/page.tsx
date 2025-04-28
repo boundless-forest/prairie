@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Token type definition
 type Token = {
@@ -88,32 +89,15 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen p-8 max-w-6xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">ERC20 Token Assets</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          View information about popular ERC20 tokens on Ethereum
-        </p>
-        <div className="flex gap-4">
-          <button
-            onClick={refreshTokenData}
-            disabled={refreshing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {refreshing ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Refreshing...
-              </>
-            ) : (
-              'Refresh Token Data'
-            )}
-          </button>
-        </div>
-      </header>
+    <main className="flex min-h-screen flex-col items-center p-10">
+      <h1 className="text-3xl font-bold mb-6">Token Assets</h1>
+
+      {/* Add link to Prices Page */}
+      <div className="mb-6">
+        <Link href="/prices" className="text-blue-500 hover:underline">
+          View Mock Token Prices
+        </Link>
+      </div>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -191,6 +175,6 @@ export default function Home() {
           </table>
         </div>
       )}
-    </div>
+    </main>
   );
 }
