@@ -1,16 +1,14 @@
 -- CreateTable
 CREATE TABLE "Token" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "address" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "symbol" TEXT NOT NULL,
     "decimals" BIGINT NOT NULL,
     "totalSupply" TEXT NOT NULL,
     "logoUrl" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Token_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateIndex

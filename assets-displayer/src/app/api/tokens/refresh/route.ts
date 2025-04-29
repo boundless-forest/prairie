@@ -50,7 +50,8 @@ export async function POST() {
           const tokenInfo = await getTokenInfo(tokenConfig.address);
           
           // Add logo URL to the token info
-          const tokenData = {
+          // Ensure tokenInfo.decimals is already BigInt from getTokenInfo
+          const tokenData = { 
             ...tokenInfo,
             logoUrl: tokenConfig.logoUrl,
           };

@@ -10,17 +10,14 @@ const ERC20_ABI = [
   'function balanceOf(address owner) view returns (uint256)'
 ];
 
-// RPC Provider URL - Replace with your own if needed
+// RPC Provider URL - Use environment variable or default
 const ETHEREUM_RPC_URL = process.env.ETHEREUM_RPC_URL || 'https://eth.llamarpc.com';
 
-// Connect to Ethereum network
-const getProvider = () => {
-  return new ethers.JsonRpcProvider(ETHEREUM_RPC_URL);
-};
+// Create a single provider instance for reuse
+const provider = new ethers.JsonRpcProvider(ETHEREUM_RPC_URL);
 
-// Get ERC20 Token contract instance
+// Get ERC20 Token contract instance using the shared provider
 const getTokenContract = (tokenAddress: string) => {
-  const provider = getProvider();
   return new ethers.Contract(tokenAddress, ERC20_ABI, provider);
 };
 
@@ -28,7 +25,7 @@ const getTokenContract = (tokenAddress: string) => {
 export const getTokenInfo = async (tokenAddress: string) => {
   try {
     const tokenContract = getTokenContract(tokenAddress);
-    
+
     // Fetch token data in parallel
     const [name, symbol, decimals, totalSupply] = await Promise.all([
       tokenContract.name(),
@@ -41,13 +38,15 @@ export const getTokenInfo = async (tokenAddress: string) => {
       address: tokenAddress,
       name,
       symbol,
-      decimals,
+      // Convert decimals to BigInt for safety, although uint8 fits in number
+      decimals: BigInt(decimals),
+      // Convert totalSupply (uint256) to string to avoid potential precision issues
       totalSupply: totalSupply.toString(),
     };
   } catch (error) {
     console.error(`Error fetching token info for ${tokenAddress}:`, error);
-    let message = 'Unknown error';
-    if (error instanceof Error) message = error.message;
-    throw new Error(`Failed to fetch token info: ${message}`);
+    // Re-throw the original error or a more specific one if needed
+    // This preserves the stack trace and original error type
+    throw new Error(`Failed to fetch token info for ${tokenAddress}`, { cause: error });
   }
 };

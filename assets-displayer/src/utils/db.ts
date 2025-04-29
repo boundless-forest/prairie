@@ -7,7 +7,8 @@ export type TokenData = {
   address: string;
   name: string;
   symbol: string;
-  decimals: number;
+  // Expect decimals as bigint
+  decimals: bigint; 
   totalSupply: string;
   logoUrl?: string;
 };

@@ -83,9 +83,6 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
-  ReadUncommitted: 'ReadUncommitted',
-  ReadCommitted: 'ReadCommitted',
-  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -104,11 +101,6 @@ exports.Prisma.TokenScalarFieldEnum = {
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
 };
 
 exports.Prisma.NullsOrder = {
@@ -158,18 +150,17 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "postgresql",
-  "postinstall": false,
+  "activeProvider": "sqlite",
   "inlineDatasources": {
     "db": {
       "url": {
-        "fromEnvVar": "DATABASE_URL",
-        "value": null
+        "fromEnvVar": null,
+        "value": "file:./dev.db"
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Token {\n  id          String   @id @default(uuid())\n  address     String   @unique\n  name        String\n  symbol      String\n  decimals    BigInt\n  totalSupply String\n  logoUrl     String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "6092d4d5ab1c5f20fd34e1a56a9ec69122a702f3e4836f4106e468d0bdd95476",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = \"file:./dev.db\"\n}\n\nmodel Token {\n  id          String   @id @default(uuid())\n  address     String   @unique\n  name        String\n  symbol      String\n  decimals    BigInt\n  totalSupply String\n  logoUrl     String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "83a5a3590ef091b299ff3e65934e6940d0f4578187a5bf7dba20bd9ebc059851",
   "copyEngine": true
 }
 config.dirname = '/'
@@ -180,9 +171,7 @@ config.engineWasm = undefined
 config.compilerWasm = undefined
 
 config.injectableEdgeEnv = () => ({
-  parsed: {
-    DATABASE_URL: typeof globalThis !== 'undefined' && globalThis['DATABASE_URL'] || typeof process !== 'undefined' && process.env && process.env.DATABASE_URL || undefined
-  }
+  parsed: {}
 })
 
 if (typeof globalThis !== 'undefined' && globalThis['DEBUG'] || typeof process !== 'undefined' && process.env && process.env.DEBUG || undefined) {
